@@ -1,0 +1,37 @@
+version: "3"
+services:
+  db:
+    image: "mongo:4.4.2"
+    container_name: "db"
+    ports:
+      - "27017:27017"
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MONGO_INITDB_DATABASE: admin
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_LOGIN}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - "../data/db:/data/db"
+      - "../data/logs:/data/logs"
+    #   - "../mongod.conf:/etc/mongod.conf"
+    # command: --config /etc/mongod.conf
+    command: --logpath /data/logs/mongodb.log
+
+  api:
+    build:
+      dockerfile: ../docker/api/Dockerfile
+      context: ../api
+      args:
+        - SERVER=${SERVER}
+    depends_on:
+      - db
+    container_name: "api"
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - "../data/load:/data/load"
+      - "../api/api:/api" # Для горячей перезагрузки
+      - "../api/app.py:/app.py" # Для горячей перезагрузки
+    ports:
+      - "5000:5000"

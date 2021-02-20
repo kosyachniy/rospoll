@@ -1,0 +1,19 @@
+# Кэш
+
+##  MacOS
+
+.DS_Store
+
+## Редакторы
+
+.idea/
+.vscode/
+
+# Ключи
+
+*.env
+
+# Данные
+
+/data/db/
+/data/logs/
