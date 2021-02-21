@@ -19,12 +19,9 @@ class API():
 		# Reset online users
 		db['online'].remove()
 
-	def method(self, name, params={}, ip=None, sid=None, token=None, language=0): # TODO: network
+	def method(self, name, params={}, ip=None, ip_remote=None, jwt={}): # TODO: network
 		self.timestamp = time.time()
 		self.ip = ip
-		self.sid = sid
-		self.token = token
-		self.language = get_language(language)
 
 		# User recognition
 
@@ -33,15 +30,17 @@ class API():
 			'admin': 2,
 		}
 
-		if token:
-			db_filter = {'id': True, '_id': False}
-			user_id = db['tokens'].find_one({'token': token}, db_filter)
+		if jwt:
+			user = db['users'].find_one({'vk': jwt['user_id']})
+			user['admin'] = 3
 
-			if user_id and user_id['id']:
-				user = db['users'].find_one({'id': user_id['id']})
+			if user:
+				self.user = user
 
-				if user:
-					self.user = user
+		# IP (case when a web application makes requests from IP with the same address)
+
+		if ip_remote and ip == self.client['ip']:
+			self.ip = ip_remote
 
 		# Remove extra indentation
 
