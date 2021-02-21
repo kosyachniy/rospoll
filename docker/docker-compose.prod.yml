@@ -1,28 +1,28 @@
 version: "3"
 services:
-  db:
-    image: "mongo:4.4.2"
-    container_name: "db"
-    ports:
-      - "27017:27017"
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      MONGO_INITDB_DATABASE: admin
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_LOGIN}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
-    volumes:
-      - "../data/db:/data/db"
-    #   - "../data/logs:/data/logs"
-    # command: --logpath /data/logs/mongodb.log
+  # db:
+  #   image: "mongo:4.4.2"
+  #   container_name: "db"
+  #   ports:
+  #     - "27017:27017"
+  #   restart: unless-stopped
+  #   env_file: .env
+  #   environment:
+  #     MONGO_INITDB_DATABASE: admin
+  #     MONGO_INITDB_ROOT_USERNAME: ${MONGO_LOGIN}
+  #     MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+  #   volumes:
+  #     - "../data/db:/data/db"
+  #   #   - "../data/logs:/data/logs"
+  #   # command: --logpath /data/logs/mongodb.log
 
-  api:
+  poll_api:
     build:
       dockerfile: ../docker/api/Dockerfile.prod
       context: ../api
-    depends_on:
-      - db
-    container_name: "api"
+    # depends_on:
+    #   - db
+    container_name: "poll_api"
     restart: unless-stopped
     network_mode: host
     volumes:
@@ -30,28 +30,29 @@ services:
       - "../api/api:/api" # Для горячей перезагрузки
       - "../api/app.py:/app.py" # Для горячей перезагрузки
 
-  server:
-    build:
-      dockerfile: ../docker/web/Dockerfile.prod
-      context: ../web
-    container_name: "server"
-    restart: unless-stopped
-    volumes:
-      - "../docker/server/nginx.prod.conf:/etc/nginx/nginx.conf"
-      - "../data/load:/load"
-      - "../data/logs:/data/logs"
-      - "../data/certbot/conf:/etc/letsencrypt"
-      - "../data/certbot/www:/var/www/certbot"
-    depends_on:
-      - api
-    network_mode: host
-    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+  # poll_server:
+  #   image: "nginx"
+  #   # build:
+  #   #   dockerfile: ../docker/web/Dockerfile.prod
+  #   #   context: ../web
+  #   container_name: "poll_server"
+  #   restart: unless-stopped
+  #   volumes:
+  #     - "../docker/server/nginx.prod.conf:/etc/nginx/nginx.conf"
+  #     - "../data/load:/load"
+  #     - "../data/logs:/data/logs"
+  #     - "../data/certbot/conf:/etc/letsencrypt"
+  #     - "../data/certbot/www:/var/www/certbot"
+  #   depends_on:
+  #     - poll_api
+  #   network_mode: host
+  #   command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
-  certbot:
-    image: certbot/certbot
-    container_name: "cert"
-    restart: unless-stopped
-    volumes:
-      - "../data/certbot/conf:/etc/letsencrypt"
-      - "../data/certbot/www:/var/www/certbot"
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+  # poll_certbot:
+  #   image: certbot/certbot
+  #   container_name: "poll_cert"
+  #   restart: unless-stopped
+  #   volumes:
+  #     - "../data/certbot/conf:/etc/letsencrypt"
+  #     - "../data/certbot/www:/var/www/certbot"
+  #   entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"

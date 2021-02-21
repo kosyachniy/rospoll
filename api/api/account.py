@@ -17,10 +17,9 @@ from api._func import check_params, load_image, get_date, next_id, \
 					  online_emit_del, online_session_close
 
 
-with open('keys.json', 'r') as file:
-	keys = json.loads(file.read())
-	VK = keys['vk']
-	GOOGLE = keys['google']
+# with open('keys.json', 'r') as file:
+# 	keys = json.loads(file.read())
+# 	VK = keys['vk']
 
 
 # # Token generation
@@ -314,244 +313,221 @@ def reg(this, **x):
 
 	return res
 
-# By social network
+# # By social network
 
-def social(this, **x):
-	# Checking parameters
+# def social(this, **x):
+# 	# Checking parameters
 
-	check_params(x, (
-		('id', True, int), # 1-ВКонтакте, 2-Telegram, 3-Google, 4-FaceBook, 5-Apple, 6-Twitter, 7-GitHub
-		('code', True, str),
-	))
+# 	check_params(x, (
+# 		('id', True, int), # 1-ВКонтакте, 2-Telegram, 3-Google, 4-FaceBook, 5-Apple, 6-Twitter, 7-GitHub
+# 		('code', True, str),
+# 	))
 
-	#
+# 	#
 
-	user_id = 0
-	new = False
-	mail = ''
+# 	user_id = 0
+# 	new = False
+# 	mail = ''
 
-	# ВКонтакте
-	if x['id'] == 1:
-		link = 'https://oauth.vk.com/access_token?client_id={}&client_secret={}&redirect_uri={}callback&code={}'
-		response = json.loads(requests.get(link.format(VK['client_id'], VK['client_secret'], CLIENT['link'], x['code'])).text)
+# 	# ВКонтакте
+# 	if x['id'] == 1:
+# 		link = 'https://oauth.vk.com/access_token?client_id={}&client_secret={}&redirect_uri={}callback&code={}'
+# 		response = json.loads(requests.get(link.format(VK['client_id'], VK['client_secret'], CLIENT['link'], x['code'])).text)
 
-		if 'user_id' in response:
-			user_id = response['user_id']
-		else:
-			raise ErrorAccess('code')
+# 		if 'user_id' in response:
+# 			user_id = response['user_id']
+# 		else:
+# 			raise ErrorAccess('code')
 
-		if 'email' in response:
-			mail = response['email']
+# 		if 'email' in response:
+# 			mail = response['email']
 
-	# Google
-	elif x['id'] == 3:
-		link = 'https://accounts.google.com/o/oauth2/token'
-		cont = {
-			'client_id': GOOGLE['client_id'],
-			'client_secret': GOOGLE['client_secret'],
-			'redirect_uri': '{}callback'.format(CLIENT['link']),
-			'grant_type': 'authorization_code',
-			'code': urllib.parse.unquote(x['code']),
-		}
-		response = json.loads(requests.post(link, json=cont).text)
+# 	# Wrong ID
 
-		if 'access_token' not in response:
-			raise ErrorAccess('code')
+# 	if not user_id:
+# 		raise ErrorWrong('id')
 
-		link = 'https://www.googleapis.com/oauth2/v1/userinfo?access_token={}'
-		response = json.loads(requests.get(link.format(response['access_token'])).text)
+# 	# Sign in
 
-		if 'id' in response:
-			user_id = response['id']
-		else:
-			raise ErrorAccess('code')
+# 	db_condition = {
+# 		'social': {'$elemMatch': {'id': x['id'], 'user': user_id}},
+# 	}
 
-	# Wrong ID
+# 	db_filter = {
+# 		'_id': False,
+# 		'id': True,
+# 		'login': True,
+# 		'name': True,
+# 		'surname': True,
+# 		'avatar': True,
+# 		'admin': True,
+# 		'mail': True,
+# 		# 'rating': True,
+# 		# 'balance': True,
+# 	}
 
-	if not user_id:
-		raise ErrorWrong('id')
+# 	res = db['users'].find_one(db_condition, db_filter)
 
-	# Sign in
+# 	# Wrong password
+# 	if not res:
+# 		# Check keys
 
-	db_condition = {
-		'social': {'$elemMatch': {'id': x['id'], 'user': user_id}},
-	}
+# 		name = ''
+# 		surname = ''
+# 		login = ''
+# 		avatar = ''
 
-	db_filter = {
-		'_id': False,
-		'id': True,
-		'login': True,
-		'name': True,
-		'surname': True,
-		'avatar': True,
-		'admin': True,
-		'mail': True,
-		# 'rating': True,
-		# 'balance': True,
-	}
+# 		if x['id'] == 1:
+# 			if 'access_token' in response:
+# 				token = response['access_token']
+# 			else:
+# 				raise ErrorAccess('code')
 
-	res = db['users'].find_one(db_condition, db_filter)
+# 			# link = 'https://api.vk.com/method/account.getProfileInfo?access_token={}&v=5.103'
+# 			link = 'https://api.vk.com/method/users.get?user_ids={}&fields=photo_max_orig,nickname&access_token={}&v=5.103'
 
-	# Wrong password
-	if not res:
-		# Check keys
+# 			try:
+# 				response = json.loads(requests.get(link.format(user_id, token)).text)['response'][0]
+# 			except:
+# 				raise ErrorAccess('vk')
 
-		name = ''
-		surname = ''
-		login = ''
-		avatar = ''
+# 			try:
+# 				name = response['first_name']
+# 				check_name(name)
+# 			except:
+# 				name = ''
 
-		if x['id'] == 1:
-			if 'access_token' in response:
-				token = response['access_token']
-			else:
-				raise ErrorAccess('code')
+# 			try:
+# 				surname = response['last_name']
+# 				check_surname(surname)
+# 			except:
+# 				surname = ''
 
-			# link = 'https://api.vk.com/method/account.getProfileInfo?access_token={}&v=5.103'
-			link = 'https://api.vk.com/method/users.get?user_ids={}&fields=photo_max_orig,nickname&access_token={}&v=5.103'
+# 			try:
+# 				login = response['nickname']
+# 				check_login(login, this.user)
+# 			except:
+# 				login = ''
 
-			try:
-				response = json.loads(requests.get(link.format(user_id, token)).text)['response'][0]
-			except:
-				raise ErrorAccess('vk')
+# 			try:
+# 				avatar = str(base64.b64encode(requests.get(response['photo_max_orig']).content))[2:-1]
+# 			except:
+# 				avatar = ''
 
-			try:
-				name = response['first_name']
-				check_name(name)
-			except:
-				name = ''
+# 			try:
+# 				if mail:
+# 					check_mail(mail, this.user)
+# 			except:
+# 				mail = ''
 
-			try:
-				surname = response['last_name']
-				check_surname(surname)
-			except:
-				surname = ''
+# 		elif x['id'] == 3:
+# 			# link = 'https://www.googleapis.com/oauth2/v1/userinfo?access_token={}'.format(x['data']['access_token'])
+# 			# res_google = json.loads(requests.get(link).text)
 
-			try:
-				login = response['nickname']
-				check_login(login, this.user)
-			except:
-				login = ''
+# 			try:
+# 				name = response['given_name']
+# 				check_name(name)
+# 			except:
+# 				name = ''
 
-			try:
-				avatar = str(base64.b64encode(requests.get(response['photo_max_orig']).content))[2:-1]
-			except:
-				avatar = ''
+# 			try:
+# 				surname = response['family_name']
+# 				check_surname(surname)
+# 			except:
+# 				surname = ''
 
-			try:
-				if mail:
-					check_mail(mail, this.user)
-			except:
-				mail = ''
+# 			try:
+# 				mail = response['email']
+# 				check_mail(mail, this.user)
+# 			except:
+# 				mail = ''
 
-		elif x['id'] == 3:
-			# link = 'https://www.googleapis.com/oauth2/v1/userinfo?access_token={}'.format(x['data']['access_token'])
-			# res_google = json.loads(requests.get(link).text)
+# 			try:
+# 				if response['picture']:
+# 					avatar = str(base64.b64encode(requests.get(response['picture']).content))[2:-1]
+# 			except:
+# 				pass
 
-			try:
-				name = response['given_name']
-				check_name(name)
-			except:
-				name = ''
+# 		# Sign up
 
-			try:
-				surname = response['family_name']
-				check_surname(surname)
-			except:
-				surname = ''
+# 		db_condition = {
+# 			'social': {'$elemMatch': {'user': user_id}},
+# 		}
 
-			try:
-				mail = response['email']
-				check_mail(mail, this.user)
-			except:
-				mail = ''
+# 		db_filter = {
+# 			'_id': True,
+# 		}
 
-			try:
-				if response['picture']:
-					avatar = str(base64.b64encode(requests.get(response['picture']).content))[2:-1]
-			except:
-				pass
+# 		res = db['users'].find_one(db_condition, db_filter)
 
-		# Sign up
+# 		if res:
+# 			raise ErrorWrong('hash')
 
-		db_condition = {
-			'social': {'$elemMatch': {'user': user_id}},
-		}
+# 		# Sign up
+# 		else:
+# 			new = True
 
-		db_filter = {
-			'_id': True,
-		}
+# 			res = registrate(
+# 				this.user,
+# 				this.timestamp,
+# 				social=[{
+# 					'id': x['id'],
+# 					'user': user_id,
+# 				}],
+# 				name = name,
+# 				surname = surname,
+# 				avatar = avatar,
+# 				mail = mail,
+# 			)
 
-		res = db['users'].find_one(db_condition, db_filter)
+# 			#
 
-		if res:
-			raise ErrorWrong('hash')
+# 			db_filter = {
+# 				'_id': False,
+# 				'id': True,
+# 				'admin': True,
+# 				# 'balance': True,
+# 				# 'rating': True,
+# 				'login': True,
+# 				'name': True,
+# 				'surname': True,
+# 				'mail': True,
+# 			}
 
-		# Sign up
-		else:
-			new = True
+# 			res = db['users'].find_one({'id': res['id']}, db_filter)
 
-			res = registrate(
-				this.user,
-				this.timestamp,
-				social=[{
-					'id': x['id'],
-					'user': user_id,
-				}],
-				name = name,
-				surname = surname,
-				avatar = avatar,
-				mail = mail,
-			)
+# 	# Assignment of the token to the user
 
-			#
+# 	if not this.token:
+# 		raise ErrorInvalid('token')
 
-			db_filter = {
-				'_id': False,
-				'id': True,
-				'admin': True,
-				# 'balance': True,
-				# 'rating': True,
-				'login': True,
-				'name': True,
-				'surname': True,
-				'mail': True,
-			}
+# 	req = {
+# 		'token': this.token,
+# 		'id': res['id'],
+# 		'time': this.timestamp,
+# 	}
+# 	db['tokens'].insert_one(req)
 
-			res = db['users'].find_one({'id': res['id']}, db_filter)
+# 	# Update online users
 
-	# Assignment of the token to the user
+# 	online_update(this.sio, res, this.token)
 
-	if not this.token:
-		raise ErrorInvalid('token')
+# 	# Response
 
-	req = {
-		'token': this.token,
-		'id': res['id'],
-		'time': this.timestamp,
-	}
-	db['tokens'].insert_one(req)
+# 	res = {
+# 		'id': res['id'],
+# 		'login': res['login'],
+# 		'name': res['name'],
+# 		'surname': res['surname'],
+# 		'avatar': IMAGE['link_opt'] + res['avatar'],
+# 		'admin': res['admin'],
+# 		'mail': res['mail'],
+# 		# 'balance': res['balance'],
+# 		# 'rating': res['rating'],
+# 		'new': new,
+# 	}
 
-	# Update online users
-
-	online_update(this.sio, res, this.token)
-
-	# Response
-
-	res = {
-		'id': res['id'],
-		'login': res['login'],
-		'name': res['name'],
-		'surname': res['surname'],
-		'avatar': IMAGE['link_opt'] + res['avatar'],
-		'admin': res['admin'],
-		'mail': res['mail'],
-		# 'balance': res['balance'],
-		# 'rating': res['rating'],
-		'new': new,
-	}
-
-	return res
+# 	return res
 
 # Log in
 # ! Сокет на авторизацию на всех вкладках токена
@@ -915,63 +891,6 @@ def online(this, **x):
 
 	if not already:
 		online_emit_add(this.sio, user_current)
-
-	# # Visits
-
-	# user_id = user_current['id'] if user_current else 0
-
-	# db_condition = {
-	# 	'token': x['token'],
-	# 	'user': user_id,
-	# }
-
-	# utm = db['utms'].find_one(db_condition)
-
-	# if not utm:
-	# 	utm = {
-	# 		'token': x['token'],
-	# 		'user': user_id,
-	# 		# 'utm': utm_mark,
-	# 		'time': this.timestamp,
-	# 		'steps': [],
-	# 	}
-
-	# 	db['utms'].insert_one(utm)
-
-	# | Sessions (sid) |
-	# | Tokens (token) |
-	# | Users (id) |
-
-	# Определить вкладку (tab - sid)
-	# ? Проверка, что токен не скомпрометирован - по ip?
-
-	# # UTM-метки
-
-	# utm_mark = {}
-	# params = x['url'].split('?')
-	# if len(params) >= 2:
-	# 	params = dict(re.findall(r'([^=\&]*)=([^\&]*)', params[1]))
-	# 	if 'utm_source' in params and 'utm_medium' in params:
-	# 		utm_mark = {
-	# 			'source': params['utm_source'],
-	# 			'agent': params['utm_medium'],
-	# 		}
-
-	# if utm:
-	# 	if utm_mark and not utm['utm']:
-	# 		utm['utm'] = utm_mark
-	# 		db['utms'].save(utm)
-
-	# else:
-	# 	utm = {
-	# 		'token': x['token'],
-	# 		'user': user_id,
-	# 		'utm': utm_mark,
-	# 		'time': this.timestamp,
-	# 		'steps': [],
-	# 	}
-
-	# 	db['utms'].insert_one(utm)
 
 # Disconnect
 

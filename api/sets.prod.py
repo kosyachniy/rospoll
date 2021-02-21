@@ -1,20 +1,20 @@
 HOST = '127.0.0.1'
 
 SERVER = {
-	'link': 'https://poll.kosyachniy.com/api/',
+	'link': 'https://rospoll.online/api/',
 	'ip': '0.0.0.0',
 	'port': 5000,
 }
 
 CLIENT = {
-	'link': 'https://poll.kosyachniy.com/',
+	'link': 'https://rospoll.online/',
 	'ip': '0.0.0.0',
 	'port': 3000,
 }
 
 IMAGE = {
-	'link': 'https://poll.kosyachniy.com/load/',
-	'link_opt': 'https://poll.kosyachniy.com/load/opt/',
+	'link': 'https://rospoll.online/load/',
+	'link_opt': 'https://rospoll.online/load/opt/',
 }
 
 SIDE_OPTIMIZED = 250

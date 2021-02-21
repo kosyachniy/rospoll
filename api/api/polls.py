@@ -134,6 +134,7 @@ def get(this, **x):
 		'id': True,
 		'name': True,
 		'time': True,
+		'cover': True,
 	}
 
 	if process_single:
