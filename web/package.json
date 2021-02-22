@@ -1,0 +1,22 @@
+{
+	"name": "rospoll",
+	"homepage": "https://github.com/kosyachniy/rospoll",
+	"main": "index.js",
+	"dependencies": {
+	  "@vkontakte/icons": "^1.55.0",
+	  "@vkontakte/vk-bridge": "^2.3.0",
+	  "@vkontakte/vk-miniapps-deploy": "0.0.17",
+	  "@vkontakte/vkui": "^3.13.1",
+	  "axios": "^0.21.0",
+	  "babel-eslint": "^10.1.0",
+	  "chalk": "^2.4.2",
+	  "core-js": "^3.7.0",
+	  "eruda": "^2.4.1",
+	  "eruda-code": "^2.0.0",
+	  "eruda-dom": "^2.0.0",
+	  "jquery": "^3.5.1",
+	  "prop-types": "^15.7.2",
+	  "react": "^16.14.0",
+	  "react-dom": "^16.14.0"
+	}
+  }
