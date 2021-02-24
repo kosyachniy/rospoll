@@ -67,6 +67,11 @@ def token_required(f):
 	def decorated(*args, **kwargs):
 		try:
 			header = request.headers.get('Authorization')
+
+			if not header:
+				return f(*args, **kwargs)
+				# return jsonify({'message': 'Token is invalid!'}), 403
+
 			token = header.split(' ')[1]
 
 			if not token:

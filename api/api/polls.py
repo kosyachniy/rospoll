@@ -18,6 +18,7 @@ def add(this, **x):
 		check_params(x, (
 			('id', True, int),
 			('title', True, str),
+			('description', True, str),
 			('audience', True, str),
 			('cover', True, str),
 			('file', True, str),
@@ -31,6 +32,7 @@ def add(this, **x):
 	else:
 		check_params(x, (
 			('title', True, str),
+			('description', True, str),
 			('audience', True, str),
 			('cover', True, str),
 			('file', True, str),
@@ -61,7 +63,7 @@ def add(this, **x):
 
 	# Change fields
 
-	for field in ('title', 'audience', 'questions', 'award', 'time', 'section'):
+	for field in ('title', 'description', 'audience', 'questions', 'award', 'time', 'section'):
 		if field in x:
 			poll[field] = x[field]
 
@@ -147,6 +149,7 @@ def get(this, **x):
 		'_id': False,
 		'id': True,
 		'title': True,
+		'description': True,
 		'time': True,
 		'cover': True,
 		'award': True,
@@ -187,8 +190,7 @@ def answer(this, **x):
 	check_params(x, (
 		('poll', True, int),
 		('question', True, int),
-		('answer', True, int),
-		('result', True, (list, int, str)),
+		('answer', True, (list, int, str)),
 	))
 
 	#
