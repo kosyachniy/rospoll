@@ -17,7 +17,7 @@ def add(this, **x):
 	if 'id' in x:
 		check_params(x, (
 			('id', True, int),
-			('name', True, str),
+			('title', True, str),
 			('audience', True, str),
 			('cover', True, str),
 			('file', True, str),
@@ -30,7 +30,7 @@ def add(this, **x):
 	# Add
 	else:
 		check_params(x, (
-			('name', True, str),
+			('title', True, str),
 			('audience', True, str),
 			('cover', True, str),
 			('file', True, str),
@@ -61,9 +61,23 @@ def add(this, **x):
 
 	# Change fields
 
-	for field in ('name', 'audience', 'questions', 'award', 'time', 'section'):
+	for field in ('title', 'audience', 'questions', 'award', 'time', 'section'):
 		if field in x:
 			poll[field] = x[field]
+
+	question_id = 0
+	for i in range(len(poll['questions'])):
+		question_id += 1
+		poll['questions'][i]['id'] = question_id + 0
+
+		if 'answers' in poll['questions'][i]:
+			answer_id = 0
+			for j in range(len(poll['questions'][i]['answers'])):
+				answer_id += 1
+				poll['questions'][i]['answers'][j] = {
+					'id': answer_id + 0,
+					'answer': poll['questions'][i]['answers'][j],
+				}
 
 	## Cover
 
@@ -132,9 +146,10 @@ def get(this, **x):
 	db_filter = {
 		'_id': False,
 		'id': True,
-		'name': True,
+		'title': True,
 		'time': True,
 		'cover': True,
+		'award': True,
 	}
 
 	if process_single:
@@ -152,6 +167,9 @@ def get(this, **x):
 	for i in range(len(polls)):
 		## Cover
 		polls[i]['cover'] = IMAGE['link_opt'] + polls[i]['cover']
+
+		## Type
+		polls[i]['type'] = 'reusable'
 
 	# Response
 
