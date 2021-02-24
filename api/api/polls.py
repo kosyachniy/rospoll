@@ -179,6 +179,25 @@ def get(this, **x):
 
 	return res
 
+# Answer
+
+def answer(this, **x):
+	# Checking parameters
+
+	check_params(x, (
+		('poll', True, int),
+		('question', True, int),
+		('answer', True, int),
+		('result', True, (list, int, str)),
+	))
+
+	#
+
+	if this.user['admin'] < 3:
+		raise ErrorAccess('token')
+
+	db['users'].update_one({'id': this.user['id']}, {'$push': {'answers': x}})
+
 # Delete
 
 def delete(this, **x):

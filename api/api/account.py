@@ -35,6 +35,7 @@ def registrate(vk, timestamp):
 		'time': timestamp,
 		'balance': 0.,
 		'name': '',
+		'answer': [],
 	}
 
 	# Save
