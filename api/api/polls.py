@@ -223,7 +223,7 @@ def delete(this, **x):
 
 # Get all
 
-def auditorium(this, **x):
+def audience(this, **x):
 	# Checking parameters
 
 	check_params(x, (

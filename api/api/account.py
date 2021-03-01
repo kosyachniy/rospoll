@@ -109,3 +109,30 @@ def auth(this, **x):
 	res['token'] = token
 
 	return res
+
+# Edit
+
+def edit(this, **x):
+	# Checking parameters
+	check_params(x, (
+		('name', False, str),
+		('surname', False, str),
+		('sex', False, int),
+		('city', False, dict),
+		('country', False, dict),
+		('bdate', False, str),
+		('photo', False, str),
+		('timezone', False, int),
+	))
+
+	# No access
+	if this.user['admin'] < 3:
+		raise ErrorAccess('edit')
+
+	# Change fields
+	for i in ('name', 'surname', 'sex', 'city', 'country', 'bdate', 'photo', 'timezone'):
+		if i in x:
+			this.user[i] = x[i]
+
+	# Save changes
+	db['users'].save(this.user)
