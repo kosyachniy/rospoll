@@ -17,15 +17,15 @@ def add(this, **x):
 	if 'id' in x:
 		check_params(x, (
 			('id', True, int),
-			('title', True, str),
-			('description', True, str),
-			('audience', True, str),
-			('cover', True, str),
-			('file', True, str),
-			('questions', True, list, dict),
-			('award', True, float),
-			('time', True, int),
-			('section', True, str),
+			('title', False, str),
+			('description', False, str),
+			('audience', False, str),
+			('cover', False, str),
+			('file', False, str),
+			('questions', False, list, dict),
+			('award', False, (float, int)),
+			('time', False, int),
+			('section', False, str),
 		))
 
 	# Add
@@ -37,7 +37,7 @@ def add(this, **x):
 			('cover', True, str),
 			('file', True, str),
 			('questions', True, list, dict),
-			('award', True, float),
+			('award', True, (float, int)),
 			('time', True, int),
 			('section', True, str),
 		))
@@ -220,3 +220,43 @@ def delete(this, **x):
 	# Delete
 
 	db['polls'].remove(poll)
+
+# Get all
+
+def auditorium(this, **x):
+	# Checking parameters
+
+	check_params(x, (
+		('poll', False, int),
+		('question', False, int),
+	))
+
+	# Polls
+
+	if 'poll' not in x:
+		return list(db['polls'].find({}, {'_id': False, 'id': True, 'title': True}))
+
+	# Questions
+
+	db_condition = {
+		'id': x['poll'],
+	}
+
+	if 'question' not in x:
+		poll = db['polls'].find_one(db_condition, {'_id': False, 'questions.id': True, 'questions.title': True})
+
+		try:
+			return poll['questions']
+		except:
+			return []
+
+	# Answers
+
+	db_condition['questions.id'] = x['question']
+
+	poll = db['polls'].find_one(db_condition, {'_id': False, 'questions.answers': True})
+
+	try:
+		return poll['questions'][0]['answers']
+	except:
+		return []
