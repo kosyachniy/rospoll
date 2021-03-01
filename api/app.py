@@ -127,7 +127,7 @@ def index(data={}):
 	else:
 		req['error'] = 0
 
-		if res:
+		if res != None:
 			req['result'] = res
 
 	return jsonify(req)

@@ -19,7 +19,8 @@ def add(this, **x):
 			('id', True, int),
 			('title', False, str),
 			('description', False, str),
-			('audience', False, str),
+			('outro', False, str),
+			('audience', False, list, dict),
 			('cover', False, str),
 			('file', False, str),
 			('questions', False, list, dict),
@@ -33,7 +34,8 @@ def add(this, **x):
 		check_params(x, (
 			('title', True, str),
 			('description', True, str),
-			('audience', True, str),
+			('outro', True, str),
+			('audience', True, list, dict),
 			('cover', True, str),
 			('file', True, str),
 			('questions', True, list, dict),
@@ -41,6 +43,12 @@ def add(this, **x):
 			('time', True, int),
 			('section', True, str),
 		))
+
+	if 'cover' in x and not x['cover']:
+		raise ErrorInvalid('cover')
+
+	if 'file' in x and not x['file']:
+		raise ErrorInvalid('file')
 
 	# Process of poll
 
@@ -63,7 +71,7 @@ def add(this, **x):
 
 	# Change fields
 
-	for field in ('title', 'description', 'audience', 'questions', 'award', 'time', 'section'):
+	for field in ('title', 'description', 'audience', 'questions', 'award', 'time', 'section', 'outro'):
 		if field in x:
 			poll[field] = x[field]
 
@@ -157,6 +165,7 @@ def get(this, **x):
 
 	if process_single:
 		db_filter['questions'] = True
+		db_filter['outro'] = True
 
 	polls = list(db['polls'].find(db_condition, db_filter).sort('created', -1))
 
