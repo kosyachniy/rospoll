@@ -1,0 +1,1 @@
+curl -X POST -H "Content-Type: application/json" -d '{"method": "polls.stat", "params": {"poll": 1}}' https://rospoll.online/api/

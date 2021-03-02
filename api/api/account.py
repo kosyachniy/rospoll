@@ -35,7 +35,7 @@ def registrate(vk, timestamp):
 		'time': timestamp,
 		'balance': 0.,
 		'name': '',
-		'answer': [],
+		'answers': [],
 	}
 
 	# Save
@@ -123,6 +123,8 @@ def edit(this, **x):
 		('bdate', False, str),
 		('photo', False, str),
 		('timezone', False, int),
+		('phone', False, str),
+		('mail', False, str),
 	))
 
 	# No access
@@ -130,7 +132,7 @@ def edit(this, **x):
 		raise ErrorAccess('edit')
 
 	# Change fields
-	for i in ('name', 'surname', 'sex', 'city', 'country', 'bdate', 'photo', 'timezone'):
+	for i in ('name', 'surname', 'sex', 'city', 'country', 'bdate', 'photo', 'timezone', 'phone', 'mail'):
 		if i in x:
 			this.user[i] = x[i]
 

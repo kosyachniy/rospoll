@@ -207,6 +207,8 @@ def answer(this, **x):
 	if this.user['admin'] < 3:
 		raise ErrorAccess('token')
 
+	x['time'] = this.timestamp
+
 	db['users'].update_one({'id': this.user['id']}, {'$push': {'answers': x}})
 
 # Delete
@@ -269,3 +271,62 @@ def audience(this, **x):
 		return poll['questions'][0]['answers']
 	except:
 		return []
+
+# Stats
+
+def stat(this, **x):
+	# Checking parameters
+
+	check_params(x, (
+		('poll', True, int),
+	))
+
+	# Get
+
+	db_filter = {
+		'_id': False,
+		'questions.id': True,
+		'questions.title': True,
+		'questions.type': True,
+		'questions.answers': True,
+	}
+
+	poll = db['polls'].find_one({'id': x['poll']}, db_filter)
+
+	# Formating & Calculating
+
+	for question_id in range(len(poll['questions'])):
+		if 'answers' in poll['questions'][question_id]:
+			for answer_id in range(len(poll['questions'][question_id]['answers'])):
+				count = db['users'].count({'answers': {'$elemMatch': {
+					'poll': x['poll'],
+					'question': poll['questions'][question_id]['id'],
+					'answer': poll['questions'][question_id]['answers'][answer_id]['id'],
+				}}})
+
+				poll['questions'][question_id]['answers'][answer_id]['count'] = count
+		else:
+			answers = []
+
+			res = list(db['users'].find({'answers': {'$elemMatch': {
+				'poll': x['poll'],
+				'question': poll['questions'][question_id]['id'],
+			}}}, {'_id': False, 'answers': {'$elemMatch': {
+				'poll': x['poll'],
+				'question': poll['questions'][question_id]['id'],
+			}}}))
+
+			if res:
+				answers = [i['answers'][-1]['answer'] for i in res]
+
+			answers_count = {i: answers.count(i) for i in set(answers)}
+			answers = [{
+				'answer': i,
+				'count': answers_count[i],
+			} for i in answers_count]
+
+			poll['questions'][question_id]['answers'] = answers
+
+	# Response
+
+	return poll
