@@ -59,8 +59,30 @@ def auth(this, **x):
 	# Checking parameters
 
 	check_params(x, (
-		('url', True, str),
+		('url', False, str),
+		('login', False, str),
+		('password', False, str),
 	))
+
+	# Admin
+
+	if 'login' in x:
+		db_condition = {
+			'login': x['login'],
+			'password': hashlib.md5(bytes(x['password'], 'utf-8')).hexdigest(),
+		}
+
+		user = db['users'].find_one(db_condition, {'_id': False, 'id': True})
+
+		if user:
+			token = jwt.encode({
+				'user_id': 0,
+				'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
+			}, SECRET_KEY).decode('UTF-8')
+
+			return token
+
+		raise ErrorAccess('admin')
 
 	# VK auth
 
