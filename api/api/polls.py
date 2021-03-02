@@ -173,6 +173,36 @@ def get(this, **x):
 
 	polls = list(db['polls'].find(db_condition, db_filter).sort('created', -1))
 
+	# Filter
+
+	if this.user['admin'] >= 3 and not process_single:
+		poll_id = 0
+
+		while poll_id < len(polls):
+			excluded = False
+
+			for condition in polls[poll_id]['audience']:
+				if 'answer' not in condition:
+					continue
+
+				excluded = True
+
+				for answer in this.user['answers']:
+					if condition['poll'] == answer['poll'] and condition['question'] == answer['question'] and condition['answer'] == answer['answer']:
+						excluded = False
+						break
+
+				if not excluded: # хотя бы одно условие
+					break
+
+			if excluded:
+				del polls[poll_id]
+				continue
+
+			poll_id += 1
+
+	# Limits
+
 	offset = x['offset'] if 'offset' in x else 0
 	last = offset+x['count'] if 'count' in x else None
 
