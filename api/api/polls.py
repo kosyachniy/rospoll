@@ -67,6 +67,7 @@ def add(this, **x):
 		poll = {
 			'id': next_id('polls'),
 			'created': this.timestamp,
+			'completed': [],
 		}
 
 	# Change fields
@@ -166,6 +167,9 @@ def get(this, **x):
 	if process_single:
 		db_filter['questions'] = True
 		db_filter['outro'] = True
+	else:
+		if this.user['admin'] >= 3:
+			db_condition['completed'] = {'$ne': this.user['id']}
 
 	polls = list(db['polls'].find(db_condition, db_filter).sort('created', -1))
 
@@ -210,6 +214,21 @@ def answer(this, **x):
 	x['time'] = this.timestamp
 
 	db['users'].update_one({'id': this.user['id']}, {'$push': {'answers': x}})
+
+	# Cache: completed
+
+	poll = db['polls'].find_one({'id': x['poll']}, {'_id': False, 'questions.id': True})
+	if poll:
+		questions = set([i['id'] for i in poll['questions']])
+
+	questions -= {x['question']}
+
+	for question in this.user['questions']:
+		if question['poll'] == x['poll']:
+			questions -= {question['question']}
+
+	if not len(questions):
+		db['polls'].update_one({'id': x['poll']}, {'$push': {'completed': this.user['id']}})
 
 # Delete
 
