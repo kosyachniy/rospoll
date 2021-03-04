@@ -1,0 +1,1 @@
+curl -X POST -H "Content-Type: application/json" -d '{"method": "users.get"}' https://rospoll.online/api/

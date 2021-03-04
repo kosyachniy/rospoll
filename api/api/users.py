@@ -1,7 +1,6 @@
-from sets import IMAGE
 from api._func.mongodb import db
 from api._error import ErrorWrong, ErrorAccess, ErrorBlock
-from api._func import check_params, get_user
+from api._func import check_params
 
 
 def get(this, **x):
@@ -32,70 +31,38 @@ def get(this, **x):
 
 	else:
 		db_condition = {
-			'admin': {'$gte': 3},
+			'login': {'$ne': 'admin'},
 		}
-
-	# Advanced options
-
-	process_self = False
-
-	if process_one:
-		if x['id'] == this.user['id']:
-			process_self = True
-
-	process_moderator = this.user['admin'] >= 5
-	process_admin = this.user['admin'] >= 7
 
 	# Get users
 
 	db_filter = {
 		'_id': False,
 		'id': True,
-		'login': True,
+		'vk': True,
+		'time': True,
 		'name': True,
 		'surname': True,
-		'avatar': True,
-		'admin': True,
-		# 'balance': True,
-		# 'rating': True,
-		# 'description': True,
-		# 'online': False,
+		'balance': True,
+		'sex': True,
+		'city': True,
+		'country': True,
+		'bdate': True,
+		'photo': True,
+		'timezone': True,
+		'phone': True,
+		'mail': True,
 	}
-
-	if process_self:
-		db_filter['mail'] = True
-		db_filter['phone'] = True
-		db_filter['social'] = True
-		# db_filter['transactions'] = True
-
-	# if process_moderator:
-	# 	db_filter['transactions'] = True
-
-	if process_admin:
-		db_filter['phone'] = True
-		db_filter['mail'] = True
-		db_filter['social'] = True
 
 	#
 
 	users = list(db['users'].find(db_condition, db_filter))
-	users = sorted(users, key=lambda i: i['rating'])[::-1]
+	users = sorted(users, key=lambda i: i['time'])[::-1]
 
 	# Count
 
 	count = x['count'] if 'count' in x else None
 	users = users[:count]
-
-	# Processing
-
-	for i in range(len(users)):
-		# Avatar
-
-		users[i]['avatar'] = IMAGE['link_opt'] + users[i]['avatar']
-
-		# # Online
-
-		# users[i]['online'] = db['online'].find_one({'id': users[i]['id']}, {'_id': True}) == True
 
 	# Response
 
@@ -105,29 +72,29 @@ def get(this, **x):
 
 	return res
 
-# Block
+# # Block
 
-def block(this, **x):
-	# Checking parameters
+# def block(this, **x):
+# 	# Checking parameters
 
-	check_params(x, (
-		('id', True, int),
-	))
+# 	check_params(x, (
+# 		('id', True, int),
+# 	))
 
-	# Get user
+# 	# Get user
 
-	users = db['users'].find_one({'id': x['id']})
+# 	users = db['users'].find_one({'id': x['id']})
 
-	## Wrond ID
-	if not users:
-		raise ErrorWrong('id')
+# 	## Wrond ID
+# 	if not users:
+# 		raise ErrorWrong('id')
 
-	# No access
-	if this.user['admin'] < 6 or users['admin'] > this.user['admin']:
-		raise ErrorAccess('block')
+# 	# No access
+# 	if this.user['admin'] < 6 or users['admin'] > this.user['admin']:
+# 		raise ErrorAccess('block')
 
-	# Change status
-	users['admin'] = 1
+# 	# Change status
+# 	users['admin'] = 1
 
-	# Save
-	db['users'].save(users)
+# 	# Save
+# 	db['users'].save(users)
