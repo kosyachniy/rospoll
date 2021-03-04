@@ -168,6 +168,8 @@ def get(this, **x):
 		db_filter['questions'] = True
 		db_filter['outro'] = True
 	else:
+		db_filter['audience'] = True
+
 		if this.user['admin'] >= 3:
 			db_condition['completed'] = {'$ne': this.user['id']}
 
@@ -216,6 +218,11 @@ def get(this, **x):
 
 		## Type
 		polls[i]['type'] = 'reusable'
+
+	# # Disposable
+
+	# for i in range(len(polls)) // 2: # TODO: 3
+	# 	pass
 
 	# Response
 
@@ -351,6 +358,7 @@ def stat(this, **x):
 					'poll': x['poll'],
 					'question': poll['questions'][question_id]['id'],
 					'answer': poll['questions'][question_id]['answers'][answer_id]['id'],
+					'blocked': {'$exists': False},
 				}}})
 
 				poll['questions'][question_id]['answers'][answer_id]['count'] = count
@@ -360,6 +368,7 @@ def stat(this, **x):
 			res = list(db['users'].find({'answers': {'$elemMatch': {
 				'poll': x['poll'],
 				'question': poll['questions'][question_id]['id'],
+				'blocked': {'$exists': False},
 			}}}, {'_id': False, 'answers': {'$elemMatch': {
 				'poll': x['poll'],
 				'question': poll['questions'][question_id]['id'],
@@ -368,13 +377,16 @@ def stat(this, **x):
 			if res:
 				answers = [i['answers'][-1]['answer'] for i in res]
 
+			answers_len = len(answers)
 			answers_count = {i: answers.count(i) for i in set(answers)}
 			answers = [{
 				'answer': i,
 				'count': answers_count[i],
+				'perc': round(answers_count[i]*100/answers_len, 1)
 			} for i in answers_count]
 
 			poll['questions'][question_id]['answers'] = answers
+			poll['questions'][question_id]['sum'] = answers_len
 
 	# Response
 

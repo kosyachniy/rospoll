@@ -52,6 +52,9 @@ def get(this, **x):
 		'timezone': True,
 		'phone': True,
 		'mail': True,
+		'blocked': True,
+		'last': True,
+		'answers': True,
 	}
 
 	#
@@ -64,6 +67,12 @@ def get(this, **x):
 	count = x['count'] if 'count' in x else None
 	users = users[:count]
 
+	# Processing
+
+	for i in range(len(users)):
+		users[i]['polls'] = len(set({j['poll'] for j in users[i]['answers']}))
+		del users[i]['answers']
+
 	# Response
 
 	res = {
@@ -72,29 +81,15 @@ def get(this, **x):
 
 	return res
 
-# # Block
+# Block
 
-# def block(this, **x):
-# 	# Checking parameters
+def block(this, **x):
+	# Checking parameters
 
-# 	check_params(x, (
-# 		('id', True, int),
-# 	))
+	check_params(x, (
+		('id', True, int),
+	))
 
-# 	# Get user
+	# Update
 
-# 	users = db['users'].find_one({'id': x['id']})
-
-# 	## Wrond ID
-# 	if not users:
-# 		raise ErrorWrong('id')
-
-# 	# No access
-# 	if this.user['admin'] < 6 or users['admin'] > this.user['admin']:
-# 		raise ErrorAccess('block')
-
-# 	# Change status
-# 	users['admin'] = 1
-
-# 	# Save
-# 	db['users'].save(users)
+	db['users'].update_one({'id': x['id']}, {'$set': {'blocked': True}})

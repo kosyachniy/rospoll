@@ -33,6 +33,7 @@ def registrate(vk, timestamp):
 		'id': user_id,
 		'vk': vk,
 		'time': timestamp,
+		'last': timestamp,
 		'balance': 0.,
 		'name': '',
 		'answers': [],
@@ -115,6 +116,9 @@ def auth(this, **x):
 		)
 
 		new = True
+
+	else:
+		db['users'].update_one({'vk': social_id}, {'$set': {'last': this.timestamp}})
 
 	#
 
