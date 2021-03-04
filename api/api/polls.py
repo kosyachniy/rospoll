@@ -362,6 +362,15 @@ def stat(this, **x):
 				}}})
 
 				poll['questions'][question_id]['answers'][answer_id]['count'] = count
+
+			poll['questions'][question_id]['sum'] = sum([i['count'] for i in poll['questions'][question_id]['answers']])
+
+			for answer_id in range(len(poll['questions'][question_id]['answers'])):
+				if poll['questions'][question_id]['sum']:
+					poll['questions'][question_id]['answers'][answer_id]['perc'] = round(poll['questions'][question_id]['answers'][answer_id]['count']*100/poll['questions'][question_id]['sum'], 1)
+				else:
+					poll['questions'][question_id]['answers'][answer_id]['perc'] = 0.
+
 		else:
 			answers = []
 
