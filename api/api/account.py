@@ -164,3 +164,8 @@ def edit(this, **x):
 
 	# Save changes
 	db['users'].save(this.user)
+
+	# Response
+	del this.user['_id']
+	del this.user['vk']
+	return this.user
