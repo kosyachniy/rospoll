@@ -90,6 +90,18 @@ def add(this, **x):
 					'answer': poll['questions'][i]['answers'][j],
 				}
 
+		if 'cover' in poll['questions'][i] and 'file' in poll['questions'][i]:
+			try:
+				file_type = poll['questions'][i]['file'].split('.')[-1]
+			except:
+				continue
+
+			try:
+				link = load_image(poll['questions'][i]['cover'], file_type)
+				poll['questions'][i]['cover'] = link
+			except:
+				continue
+
 	## Cover
 
 	poll['cover'] = '0.png'
@@ -102,13 +114,13 @@ def add(this, **x):
 		except:
 			raise ErrorInvalid('file')
 
-		# try:
-		link = load_image(x['cover'], file_type)
-		poll['cover'] = link
+		try:
+			link = load_image(x['cover'], file_type)
+			poll['cover'] = link
 
-		# # Error loading cover
-		# except:
-		# 	raise ErrorUpload('cover')
+		# Error loading cover
+		except:
+			raise ErrorUpload('cover')
 
 	# Save poll
 	db['polls'].save(poll)
