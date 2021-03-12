@@ -92,4 +92,12 @@ def block(this, **x):
 
 	# Update
 
-	db['users'].update_one({'id': x['id']}, {'$set': {'blocked': True}})
+	user = db['users'].find_one({'id': x['id']}, {'_id': False, 'blocked': True})
+
+	if user is None:
+		raise ErrorWrong('id')
+
+	if 'blocked' not in user:
+		db['users'].update_one({'id': x['id']}, {'$set': {'blocked': True}})
+	else:
+		db['users'].update_one({'id': x['id']}, {'$unset': {'blocked': ''}})

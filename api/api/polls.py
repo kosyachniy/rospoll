@@ -299,7 +299,7 @@ def answer(this, **x):
 
 		if not len(questions) and this.user['id'] not in poll['completed']:
 			db['polls'].update_one({'id': x['poll']}, {'$push': {'completed': this.user['id']}})
-			db['users'].update_one({'id': this.user['id']}, {'$set': {'balance': this.user['balance']+poll['award']}})
+			db['users'].update_one({'id': this.user['id']}, {'$inc': {'balance': poll['award']}})
 
 # Delete
 

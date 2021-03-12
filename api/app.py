@@ -39,7 +39,7 @@ def get_unique_code():
 limiter = Limiter(
 	app,
 	key_func=get_unique_code,
-	default_limits=['1000/day', '500/hour', '20/minute'] # TODO: fix
+	default_limits=['3000/day', '1500/hour', '60/minute']
 )
 
 # API
