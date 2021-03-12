@@ -25,3 +25,6 @@ def add(this, **x):
 	}
 
 	db['withdraw'].insert_one(withdraw)
+
+def get(this, **x):
+	return list(db['withdraw'].find({}, {'_id': False}))
