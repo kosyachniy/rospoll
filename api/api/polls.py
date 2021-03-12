@@ -253,31 +253,53 @@ def answer(this, **x):
 		('poll', True, int),
 		('question', True, int),
 		('answer', True, (list, int, str)),
+		('file', False, str),
 	))
 
-	#
+	# Access
 
 	if this.user['admin'] < 3:
 		raise ErrorAccess('token')
 
+	# Process
+
 	x['time'] = this.timestamp
+
+	if 'file' in x:
+		try:
+			file_type = x['file'].split('.')[-1]
+
+		# Invalid file extension
+		except:
+			raise ErrorInvalid('file')
+
+		try:
+			x['answer'] = load_image(x['answer'], file_type)
+
+		# Error loading cover
+		except:
+			raise ErrorUpload('image')
+
+		del x['file']
+
+	# Save
 
 	db['users'].update_one({'id': this.user['id']}, {'$push': {'answers': x}})
 
 	# Cache: completed
 
-	poll = db['polls'].find_one({'id': x['poll']}, {'_id': False, 'questions.id': True})
+	poll = db['polls'].find_one({'id': x['poll']}, {'_id': False, 'questions.id': True, 'completed': True, 'award': True})
 	if poll:
 		questions = set([i['id'] for i in poll['questions']])
+		questions -= {x['question']}
 
-	questions -= {x['question']}
+		for question in this.user['answers']:
+			if question['poll'] == x['poll']:
+				questions -= {question['question']}
 
-	for question in this.user['questions']:
-		if question['poll'] == x['poll']:
-			questions -= {question['question']}
-
-	if not len(questions):
-		db['polls'].update_one({'id': x['poll']}, {'$push': {'completed': this.user['id']}})
+		if not len(questions) and this.user['id'] not in poll['completed']:
+			db['polls'].update_one({'id': x['poll']}, {'$push': {'completed': this.user['id']}})
+			db['users'].update_one({'id': this.user['id']}, {'$set': {'balance': this.user['balance']+poll['award']}})
 
 # Delete
 
