@@ -1,4 +1,4 @@
-from api._error import ErrorAccess
+from api._error import ErrorAccess, ErrorEmpty # , ErrorBlock
 from api._func import check_params, next_id
 from api._func.mongodb import db
 
@@ -10,9 +10,18 @@ def add(this, **x):
 		('details', True, str),
 	))
 
-	# No access
+	# Errors
+	## No access
 	if this.user['admin'] < 3:
 		raise ErrorAccess('withdraw')
+
+	## No balance
+	if not this.user['balance']:
+		raise ErrorEmpty('balance')
+
+	# ## Blocked
+	# if 'blocked' in this.user:
+	# 	raise ErrorBlock('user')
 
 	#
 
@@ -22,9 +31,25 @@ def add(this, **x):
 		'time': this.timestamp,
 		'type': x['type'],
 		'details': x['details'],
+		'status': 1,
+		'count': this.user['balance'],
 	}
 
 	db['withdraw'].insert_one(withdraw)
 
+	#
+
+	db['users'].update_one({'id': this.user['id']}, {'$set': {'balance': 0}})
+
 def get(this, **x):
-	return list(db['withdraw'].find({}, {'_id': False}))
+	return list(db['withdraw'].find({'status': 1}, {'_id': False, 'status': False}))
+
+def close(this, **x):
+	# Checking parameters
+	check_params(x, (
+		('id', True, int),
+	))
+
+	#
+
+	db['withdraw'].update_one({'id':x['id']}, {'$set': {'status': 0}})
