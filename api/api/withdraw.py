@@ -43,7 +43,7 @@ def add(this, **x):
 
 def get(this, **x):
 	# No access
-	if this.user['admin'] < 3:
+	if this.user['admin'] < 4:
 		raise ErrorAccess('get')
 
 	return list(db['withdraw'].find({'status': 1}, {'_id': False, 'status': False}))
@@ -55,9 +55,9 @@ def close(this, **x):
 	))
 
 	# No access
-	if this.user['admin'] < 3:
+	if this.user['admin'] < 4:
 		raise ErrorAccess('close')
 
 	#
 
-	db['withdraw'].update_one({'id':x['id']}, {'$set': {'status': 0}})
+	db['withdraw'].update_one({'id': x['id']}, {'$set': {'status': 0}})

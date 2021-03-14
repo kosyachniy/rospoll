@@ -13,6 +13,10 @@ def get(this, **x):
 		('fields', False, list, str),
 	))
 
+	# No access
+	if this.user['admin'] < 4:
+		raise ErrorAccess('get')
+
 	# Condition formation
 
 	process_one = False
@@ -90,7 +94,7 @@ def block(this, **x):
 	))
 
 	# No access
-	if this.user['admin'] < 3:
+	if this.user['admin'] < 4:
 		raise ErrorAccess('block')
 
 	# Update
@@ -114,7 +118,7 @@ def notify(this, **x):
 	))
 
 	# No access
-	if this.user['admin'] < 3:
+	if this.user['admin'] < 4:
 		raise ErrorAccess('notify')
 
 	#

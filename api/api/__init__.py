@@ -32,7 +32,9 @@ class API():
 
 		if jwt:
 			user = db['users'].find_one({'vk': jwt['user_id']})
-			user['admin'] = 3
+
+			if 'admin' not in user:
+				user['admin'] = 3
 
 			if user:
 				self.user = user

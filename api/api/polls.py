@@ -51,7 +51,7 @@ def add(this, **x):
 		raise ErrorInvalid('file')
 
 	# No access
-	if this.user['admin'] < 3:
+	if this.user['admin'] < 4:
 		raise ErrorAccess('add')
 
 	# Process of poll
@@ -336,6 +336,10 @@ def audience(this, **x):
 		('question', False, int),
 	))
 
+	# No access
+	if this.user['admin'] < 4:
+		raise ErrorAccess('audience')
+
 	# Polls
 
 	if 'poll' not in x:
@@ -376,7 +380,7 @@ def stat(this, **x):
 	))
 
 	# No access
-	if this.user['admin'] < 3:
+	if this.user['admin'] < 4:
 		raise ErrorAccess('stat')
 
 	# Get
