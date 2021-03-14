@@ -388,18 +388,28 @@ def stat(this, **x):
 	for question_id in range(len(poll['questions'])):
 		if 'answers' in poll['questions'][question_id]:
 			for answer_id in range(len(poll['questions'][question_id]['answers'])):
-				users = list(db['users'].find({'answers': {'$elemMatch': {
-					'poll': x['poll'],
-					'question': poll['questions'][question_id]['id'],
-					'answer': poll['questions'][question_id]['answers'][answer_id]['id'],
+				users = list(db['users'].find({
 					'blocked': {'$exists': False},
-				}}}, {
+					'answers': {'$elemMatch': {
+						'poll': x['poll'],
+						'question': poll['questions'][question_id]['id'],
+						'answer': poll['questions'][question_id]['answers'][answer_id]['id'],
+					}},
+				}, {
 					'_id': False,
 					'vk': True,
+					'answers': {'$elemMatch': {
+						'poll': x['poll'],
+						'question': poll['questions'][question_id]['id'],
+						'answer': poll['questions'][question_id]['answers'][answer_id]['id'],
+					}},
 				}))
 
 				poll['questions'][question_id]['answers'][answer_id]['count'] = len(users)
-				poll['questions'][question_id]['answers'][answer_id]['users'] = [user['vk'] for user in users]
+				poll['questions'][question_id]['answers'][answer_id]['users'] = [{
+					'vk': user['vk'],
+					'time': user['answers'][-1]['time'] if 'time' in user['answers'][-1] else 0,
+				} for user in users]
 
 			poll['questions'][question_id]['sum'] = sum([i['count'] for i in poll['questions'][question_id]['answers']])
 
@@ -413,21 +423,33 @@ def stat(this, **x):
 		else:
 			answers = {}
 
-			users = list(db['users'].find({'answers': {'$elemMatch': {
-				'poll': x['poll'],
-				'question': poll['questions'][question_id]['id'],
-				'blocked': {'$exists': False},
-			}}}, {'_id': False, 'vk': True, 'answers': {'$elemMatch': {
-				'poll': x['poll'],
-				'question': poll['questions'][question_id]['id'],
-			}}}))
+			users = list(db['users'].find({
+				'answers': {'$elemMatch': {
+					'poll': x['poll'],
+					'question': poll['questions'][question_id]['id'],
+					'blocked': {'$exists': False},
+				}},
+			}, {
+				'_id': False,
+				'vk': True,
+				'answers': {'$elemMatch': {
+					'poll': x['poll'],
+					'question': poll['questions'][question_id]['id'],
+				}},
+			}))
 
 			if users:
 				for user in users:
 					if user['answers'][-1]['answer'] in answers:
-						answers[user['answers'][-1]['answer']].append(user['vk'])
+						answers[user['answers'][-1]['answer']].append({
+							'vk': user['vk'],
+							'time': user['answers'][-1]['time'] if 'time' in user['answers'][-1] else 0,
+						})
 					else:
-						answers[user['answers'][-1]['answer']] = [user['vk']]
+						answers[user['answers'][-1]['answer']] = [{
+							'vk': user['vk'],
+							'time': user['answers'][-1]['time'] if 'time' in user['answers'][-1] else 0,
+						}]
 
 			answers_len = len(users)
 			answers = [{
