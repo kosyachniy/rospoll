@@ -1,4 +1,5 @@
 from api._func.mongodb import db
+from api._func.vk_app import notify as notify_vk
 from api._error import ErrorWrong, ErrorAccess, ErrorBlock
 from api._func import check_params
 
@@ -81,8 +82,6 @@ def get(this, **x):
 
 	return res
 
-# Block
-
 def block(this, **x):
 	# Checking parameters
 
@@ -101,3 +100,45 @@ def block(this, **x):
 		db['users'].update_one({'id': x['id']}, {'$set': {'blocked': True}})
 	else:
 		db['users'].update_one({'id': x['id']}, {'$unset': {'blocked': ''}})
+
+def notify(this, **x):
+	# Checking parameters
+
+	check_params(x, (
+		('id', False, int),
+		('text', True, str),
+	))
+
+	#
+
+	if 'id' not in x:
+		x['id'] = 0
+
+	#
+
+	if x['id']:
+		poll = db['polls'].find_one({'id': x['id']}, {'_id': False, 'audience': True})
+
+		if len(poll['audience']):
+			cond = {}
+
+			for field in ('poll', 'question', 'answer'):
+				if field in poll['audience'][0]:
+					cond[field] = poll['audience'][0][field]
+
+			users = [user['vk'] for user in db['users'].find({
+				'answers': {'$elemMatch': cond},
+			}, {
+				'_id': False,
+				'vk': True,
+			})]
+
+		else:
+			users = [user['vk'] for user in db['users'].find({}, {'_id': False, 'vk': True})]
+
+	else:
+		users = [user['vk'] for user in db['users'].find({}, {'_id': False, 'vk': True})]
+
+	print('NOTIFY', x['id'], users)
+
+	notify_vk(users, x['text'])
