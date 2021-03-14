@@ -388,14 +388,18 @@ def stat(this, **x):
 	for question_id in range(len(poll['questions'])):
 		if 'answers' in poll['questions'][question_id]:
 			for answer_id in range(len(poll['questions'][question_id]['answers'])):
-				count = db['users'].count({'answers': {'$elemMatch': {
+				users = list(db['users'].find({'answers': {'$elemMatch': {
 					'poll': x['poll'],
 					'question': poll['questions'][question_id]['id'],
 					'answer': poll['questions'][question_id]['answers'][answer_id]['id'],
 					'blocked': {'$exists': False},
-				}}})
+				}}}, {
+					'_id': False,
+					'vk': True,
+				}))
 
-				poll['questions'][question_id]['answers'][answer_id]['count'] = count
+				poll['questions'][question_id]['answers'][answer_id]['count'] = len(users)
+				poll['questions'][question_id]['answers'][answer_id]['users'] = [user['vk'] for user in users]
 
 			poll['questions'][question_id]['sum'] = sum([i['count'] for i in poll['questions'][question_id]['answers']])
 
@@ -404,29 +408,34 @@ def stat(this, **x):
 					poll['questions'][question_id]['answers'][answer_id]['perc'] = round(poll['questions'][question_id]['answers'][answer_id]['count']*100/poll['questions'][question_id]['sum'], 1)
 				else:
 					poll['questions'][question_id]['answers'][answer_id]['perc'] = 0.
+					poll['questions'][question_id]['answers'][answer_id]['users'] = []
 
 		else:
-			answers = []
+			answers = {}
 
-			res = list(db['users'].find({'answers': {'$elemMatch': {
+			users = list(db['users'].find({'answers': {'$elemMatch': {
 				'poll': x['poll'],
 				'question': poll['questions'][question_id]['id'],
 				'blocked': {'$exists': False},
-			}}}, {'_id': False, 'answers': {'$elemMatch': {
+			}}}, {'_id': False, 'vk': True, 'answers': {'$elemMatch': {
 				'poll': x['poll'],
 				'question': poll['questions'][question_id]['id'],
 			}}}))
 
-			if res:
-				answers = [i['answers'][-1]['answer'] for i in res]
+			if users:
+				for user in users:
+					if user['answers'][-1]['answer'] in answers:
+						answers[user['answers'][-1]['answer']].append(user['vk'])
+					else:
+						answers[user['answers'][-1]['answer']] = [user['vk']]
 
-			answers_len = len(answers)
-			answers_count = {i: answers.count(i) for i in set(answers)}
+			answers_len = len(users)
 			answers = [{
-				'answer': i,
-				'count': answers_count[i],
-				'perc': round(answers_count[i]*100/answers_len, 1)
-			} for i in answers_count]
+				'answer': answer,
+				'users': answers[answer],
+				'count': len(answers[answer]),
+				'perc': round(len(answers[answer])*100/answers_len, 1),
+			} for answer in answers]
 
 			poll['questions'][question_id]['answers'] = answers
 			poll['questions'][question_id]['sum'] = answers_len
