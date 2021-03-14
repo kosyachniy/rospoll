@@ -89,6 +89,10 @@ def block(this, **x):
 		('id', True, int),
 	))
 
+	# No access
+	if this.user['admin'] < 3:
+		raise ErrorAccess('block')
+
 	# Update
 
 	user = db['users'].find_one({'id': x['id']}, {'_id': False, 'blocked': True})
@@ -108,6 +112,10 @@ def notify(this, **x):
 		('id', False, int),
 		('text', True, str),
 	))
+
+	# No access
+	if this.user['admin'] < 3:
+		raise ErrorAccess('notify')
 
 	#
 

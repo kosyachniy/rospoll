@@ -50,6 +50,10 @@ def add(this, **x):
 	if 'file' in x and not x['file']:
 		raise ErrorInvalid('file')
 
+	# No access
+	if this.user['admin'] < 3:
+		raise ErrorAccess('add')
+
 	# Process of poll
 
 	processed = False
@@ -370,6 +374,10 @@ def stat(this, **x):
 	check_params(x, (
 		('poll', True, int),
 	))
+
+	# No access
+	if this.user['admin'] < 3:
+		raise ErrorAccess('stat')
 
 	# Get
 

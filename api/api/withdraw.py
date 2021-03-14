@@ -42,6 +42,10 @@ def add(this, **x):
 	db['users'].update_one({'id': this.user['id']}, {'$set': {'balance': 0}})
 
 def get(this, **x):
+	# No access
+	if this.user['admin'] < 3:
+		raise ErrorAccess('get')
+
 	return list(db['withdraw'].find({'status': 1}, {'_id': False, 'status': False}))
 
 def close(this, **x):
@@ -49,6 +53,10 @@ def close(this, **x):
 	check_params(x, (
 		('id', True, int),
 	))
+
+	# No access
+	if this.user['admin'] < 3:
+		raise ErrorAccess('close')
 
 	#
 
