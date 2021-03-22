@@ -33,10 +33,10 @@ class API():
 		if jwt:
 			user = db['users'].find_one({'vk': jwt['user_id']})
 
-			if 'admin' not in user:
-				user['admin'] = 3
-
 			if user:
+				if 'admin' not in user:
+					user['admin'] = 3
+
 				self.user = user
 
 		# IP (case when a web application makes requests from IP with the same address)

@@ -75,13 +75,13 @@ def token_required(f):
 			token = header.split(' ')[1]
 
 			if not token:
-				return jsonify({'message': 'Token is missing!'}), 403
+				pass
 
 			try:
 				data = jwt.decode(token, SECRET_KEY)
 				kwargs['data'] = data
 			except:
-				return jsonify({'message': 'Token is invalid!'}), 403
+				pass
 
 			return f(*args, **kwargs)
 

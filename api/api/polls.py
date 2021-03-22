@@ -228,13 +228,13 @@ def get(this, **x):
 				if not excluded: # хотя бы одно условие
 					break
 
-			if 'audience_sex' in polls[poll_id] and len(polls[poll_id]['audience_sex']):
+			if not excluded and 'audience_sex' in polls[poll_id] and len(polls[poll_id]['audience_sex']):
 				if 'sex' not in this.user:
 					excluded = True
 				else:
 					excluded = this.user['sex'] not in polls[poll_id]['audience_sex']
 
-			if 'audience_city' in polls[poll_id] and len(polls[poll_id]['audience_city']):
+			if not excluded and 'audience_city' in polls[poll_id] and len(polls[poll_id]['audience_city']):
 				if 'city' not in this.user:
 					excluded = True
 				else:

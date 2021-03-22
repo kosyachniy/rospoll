@@ -1,6 +1,6 @@
 from api._func.mongodb import db
 from api._func.vk_app import notify as notify_vk
-from api._error import ErrorWrong, ErrorAccess, ErrorBlock
+from api._error import ErrorWrong, ErrorAccess, ErrorBlock, ErrorInvalid
 from api._func import check_params
 
 
@@ -113,7 +113,7 @@ def notify(this, **x):
 	# Checking parameters
 
 	check_params(x, (
-		('id', False, int),
+		('poll', False, int),
 		('text', True, str),
 	))
 
@@ -121,16 +121,20 @@ def notify(this, **x):
 	if this.user['admin'] < 4:
 		raise ErrorAccess('notify')
 
+	# Empty text
+	if not len(x['text']):
+		raise ErrorInvalid('text')
+
 	#
 
-	if 'id' not in x:
-		x['id'] = 0
+	if 'poll' not in x:
+		x['poll'] = 0
 
 	#
 
-	if x['id']:
+	if x['poll']:
 		db_filter = {'_id': False, 'audience': True, 'audience_sex': True, 'audience_city': True}
-		poll = db['polls'].find_one({'id': x['id']}, db_filter)
+		poll = db['polls'].find_one({'id': x['poll']}, db_filter)
 
 		if len(poll['audience']):
 			cond = {}
@@ -143,6 +147,8 @@ def notify(this, **x):
 
 		else:
 			db_condition = {}
+
+		db_condition['vk'] = {'$ne': 0}
 
 		if 'audience_sex' in poll and len(poll['audience_sex']):
 			db_condition['sex'] = {'$in': poll['audience_sex']}
@@ -158,6 +164,6 @@ def notify(this, **x):
 	else:
 		users = [user['vk'] for user in db['users'].find({}, {'_id': False, 'vk': True})]
 
-	print('NOTIFY', x['id'], users)
+	print('NOTIFY', x['poll'], users)
 
 	notify_vk(users, x['text'])
