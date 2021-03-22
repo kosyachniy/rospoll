@@ -256,7 +256,7 @@ def answer(this, **x):
 	check_params(x, (
 		('poll', True, int),
 		('question', True, int),
-		('answer', True, (list, int, str)),
+		('answer', True, (list, int, str), int),
 		('file', False, str),
 	))
 

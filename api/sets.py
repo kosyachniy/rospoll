@@ -17,6 +17,6 @@ IMAGE = {
 	'link_opt': 'http://localhost/load/opt/',
 }
 
-SIDE_OPTIMIZED = 250
+SIDE_OPTIMIZED = 500
 
 VK_API_VERSION = '5.130'
