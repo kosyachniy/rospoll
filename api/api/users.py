@@ -129,7 +129,8 @@ def notify(this, **x):
 	#
 
 	if x['id']:
-		poll = db['polls'].find_one({'id': x['id']}, {'_id': False, 'audience': True})
+		db_filter = {'_id': False, 'audience': True, 'audience_sex': True, 'audience_city': True}
+		poll = db['polls'].find_one({'id': x['id']}, db_filter)
 
 		if len(poll['audience']):
 			cond = {}
@@ -138,15 +139,21 @@ def notify(this, **x):
 				if field in poll['audience'][0]:
 					cond[field] = poll['audience'][0][field]
 
-			users = [user['vk'] for user in db['users'].find({
-				'answers': {'$elemMatch': cond},
-			}, {
-				'_id': False,
-				'vk': True,
-			})]
+			db_condition = {'answers': {'$elemMatch': cond}}
 
 		else:
-			users = [user['vk'] for user in db['users'].find({}, {'_id': False, 'vk': True})]
+			db_condition = {}
+
+		if 'audience_sex' in poll and len(poll['audience_sex']):
+			db_condition['sex'] = {'$in': poll['audience_sex']}
+
+		if 'audience_city' in poll and len(poll['audience_city']):
+			db_condition['city.id'] = {'$in': poll['audience_city']}
+
+		users = [user['vk'] for user in db['users'].find(db_condition, {
+			'_id': False,
+			'vk': True,
+		})]
 
 	else:
 		users = [user['vk'] for user in db['users'].find({}, {'_id': False, 'vk': True})]

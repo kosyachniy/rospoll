@@ -21,6 +21,8 @@ def add(this, **x):
 			('description', False, str),
 			('outro', False, str),
 			('audience', False, list, dict),
+			('audience_sex', False, list, int),
+			('audience_city', False, list, int),
 			('cover', False, str),
 			('file', False, str),
 			('questions', False, list, dict),
@@ -36,6 +38,8 @@ def add(this, **x):
 			('description', True, str),
 			('outro', True, str),
 			('audience', True, list, dict),
+			('audience_sex', False, list, int),
+			('audience_city', False, list, int),
 			('cover', True, str),
 			('file', True, str),
 			('questions', True, list, dict),
@@ -49,6 +53,12 @@ def add(this, **x):
 
 	if 'file' in x and not x['file']:
 		raise ErrorInvalid('file')
+
+	if 'audience_sex' not in x:
+		x['audience_sex'] = []
+
+	if 'audience_city' not in x:
+		x['audience_city'] = []
 
 	# No access
 	if this.user['admin'] < 4:
@@ -76,7 +86,10 @@ def add(this, **x):
 
 	# Change fields
 
-	for field in ('title', 'description', 'audience', 'questions', 'award', 'time', 'section', 'outro'):
+	for field in (
+		'title', 'description', 'audience', 'audience_sex', 'audience_city',
+		'questions', 'award', 'time', 'section', 'outro',
+	):
 		if field in x:
 			poll[field] = x[field]
 
@@ -185,6 +198,8 @@ def get(this, **x):
 		db_filter['outro'] = True
 	else:
 		db_filter['audience'] = True
+		db_filter['audience_sex'] = True
+		db_filter['audience_city'] = True
 
 		if this.user['admin'] >= 3:
 			db_condition['completed'] = {'$ne': this.user['id']}
@@ -212,6 +227,18 @@ def get(this, **x):
 
 				if not excluded: # хотя бы одно условие
 					break
+
+			if 'audience_sex' in polls[poll_id] and len(polls[poll_id]['audience_sex']):
+				if 'sex' not in this.user:
+					excluded = True
+				else:
+					excluded = this.user['sex'] not in polls[poll_id]['audience_sex']
+
+			if 'audience_city' in polls[poll_id] and len(polls[poll_id]['audience_city']):
+				if 'city' not in this.user:
+					excluded = True
+				else:
+					excluded = this.user['city']['id'] not in polls[poll_id]['audience_city']
 
 			if excluded:
 				del polls[poll_id]
